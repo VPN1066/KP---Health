@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KP Health Dashboard</title>
+<meta name="description" content="Personal blood, urine and ECG results for Kalpana Patel, October 2026 compared with January 2025.">
+<script>try{var t=localStorage.getItem("kp-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<link rel="stylesheet" href="https://unpkg.com/lenis@1.3.26/dist/lenis.css">
+<style>
+:root{
+  --bg:#f5f5f7; --surface:#ffffff; --surface-2:#fbfbfd; --ink:#1d1d1f; --ink-2:#6e6e73; --ink-3:#86868b;
+  --line:rgba(0,0,0,.08); --track:#e8e8ed; --link:#0066cc; --nav:rgba(251,251,253,.78);
+  --good:#248a3d; --good-fill:#34c759; --good-bg:#e9f8ee;
+  --warn:#a85200; --warn-fill:#ff9f0a; --warn-bg:#fff4e0;
+  --bad:#c4000f; --bad-fill:#ff3b30; --bad-bg:#ffecea;
+  --range:#bfe8cc;
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 12px 40px rgba(0,0,0,.06);
+  --radius:22px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue","Segoe UI",Inter,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#000; --surface:#1c1c1e; --surface-2:#161618; --ink:#f5f5f7; --ink-2:#a1a1a6; --ink-3:#8e8e93;
+    --line:rgba(255,255,255,.1); --track:#2c2c2e; --link:#2997ff; --nav:rgba(22,22,23,.72);
+    --good:#30d158; --good-fill:#30d158; --good-bg:rgba(48,209,88,.14);
+    --warn:#ffb340; --warn-fill:#ff9f0a; --warn-bg:rgba(255,159,10,.15);
+    --bad:#ff6961; --bad-fill:#ff453a; --bad-bg:rgba(255,69,58,.16);
+    --range:rgba(48,209,88,.22);
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#000; --surface:#1c1c1e; --surface-2:#161618; --ink:#f5f5f7; --ink-2:#a1a1a6; --ink-3:#8e8e93;
+    --line:rgba(255,255,255,.1); --track:#2c2c2e; --link:#2997ff; --nav:rgba(22,22,23,.72);
+    --good:#30d158; --good-fill:#30d158; --good-bg:rgba(48,209,88,.14);
+    --warn:#ffb340; --warn-fill:#ff9f0a; --warn-bg:rgba(255,159,10,.15);
+    --bad:#ff6961; --bad-fill:#ff453a; --bad-bg:rgba(255,69,58,.16);
+    --range:rgba(48,209,88,.22);
+    --shadow:none;
+  }
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.47;letter-spacing:-.011em;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+@media(max-width:600px){.wrap{padding:0 16px}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:50;background:var(--nav);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:22px;height:52px}
+.nav .brand{font-weight:600;font-size:19px;letter-spacing:-.02em;white-space:nowrap}
+.nav ul{display:flex;gap:20px;list-style:none;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav ul::-webkit-scrollbar{display:none}
+.nav a{color:var(--ink);opacity:.8;font-size:13px;white-space:nowrap}
+.nav a:hover{opacity:1;text-decoration:none}
+@media(max-width:700px){.nav .brand{display:none}.nav ul{margin-left:0;gap:18px}}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:110px 0 90px;text-align:center}
+.aurora{position:absolute;inset:-20%;z-index:0;pointer-events:none;filter:blur(70px);opacity:.55}
+.aurora span{position:absolute;border-radius:50%;width:46vw;height:46vw;max-width:620px;max-height:620px}
+.aurora .a1{background:#ff375f;left:8%;top:10%}
+.aurora .a2{background:#0a84ff;right:6%;top:18%}
+.aurora .a3{background:#30d158;left:34%;top:42%}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .aurora{opacity:.35}}
+:root[data-theme="dark"] .aurora{opacity:.35}
+.theme{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px 5px 8px;font-size:13px;cursor:pointer}
+.theme svg{width:18px;height:18px}
+.theme:focus-visible{outline:3px solid rgba(0,113,227,.45);outline-offset:2px}
+body,.card,.nav,.pill,.seg,.tabs button,.catbar button{transition:background-color .35s,color .35s,border-color .35s}
+@media(max-width:700px){.theme .tl{display:none}.theme{padding:5px 8px}}
+.hero>*{position:relative;z-index:1}
+.eyebrow{font-size:19px;font-weight:600;color:var(--ink-2);margin-bottom:10px;letter-spacing:-.01em}
+h1{font-size:clamp(44px,8vw,88px);line-height:1.04;letter-spacing:-.035em;font-weight:700}
+h1 .w{display:inline-block;will-change:transform,filter,opacity}
+.hero p.lede{max-width:640px;margin:22px auto 0;font-size:clamp(19px,2.4vw,24px);line-height:1.35;color:var(--ink-2);letter-spacing:-.015em}
+.meta{margin-top:26px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-size:14px;color:var(--ink-2);border:1px solid var(--line)}
+
+/* SECTIONS */
+section{padding:80px 0}
+.sec-head{margin-bottom:34px}
+.sec-head .kicker{font-size:17px;font-weight:600;color:var(--ink-3);margin-bottom:6px}
+h2{font-size:clamp(34px,5vw,56px);line-height:1.07;letter-spacing:-.03em;font-weight:700}
+.sec-head p{margin-top:12px;font-size:19px;color:var(--ink-2);max-width:720px}
+h3{font-size:21px;letter-spacing:-.02em;line-height:1.2;font-weight:600}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;border:1px solid var(--line)}
+
+/* SCORE TILES */
+.score{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:820px){.score{grid-template-columns:repeat(2,1fr)}}
+.tile{padding:26px 24px}
+.tile .num{font-size:clamp(46px,6vw,64px);font-weight:700;letter-spacing:-.04em;line-height:1}
+.tile .lbl{margin-top:10px;font-size:15px;color:var(--ink-2)}
+.tile .tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:14px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.g .dot,.dot.g{background:var(--good-fill)} .a .dot,.dot.a{background:var(--warn-fill)} .r .dot,.dot.r{background:var(--bad-fill)}
+.tile.g .tag{color:var(--good)} .tile.a .tag{color:var(--warn)} .tile.r .tag{color:var(--bad)}
+
+/* PRIORITY */
+.prio{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:820px){.prio{grid-template-columns:1fr}}
+.prio .card{position:relative;overflow:hidden}
+.prio .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px}
+.prio .card.r::before{background:var(--bad-fill)} .prio .card.a::before{background:var(--warn-fill)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.chip.r{background:var(--bad-bg);color:var(--bad)} .chip.a{background:var(--warn-bg);color:var(--warn)} .chip.g{background:var(--good-bg);color:var(--good)}
+.chip svg{width:12px;height:12px}
+.prio h3{margin:12px 0 8px}
+.prio p{color:var(--ink-2);font-size:16px}
+.prio .do{margin-top:14px;font-size:15px;color:var(--ink)}
+.prio .do b{font-weight:600}
+.prio .nums{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.prio .nums span{font-size:13px;background:var(--surface-2);border:1px solid var(--line);padding:4px 10px;border-radius:8px;color:var(--ink-2)}
+
+/* CONTROLS */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:22px}
+.seg{display:inline-flex;background:var(--track);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:999px;font-size:14px;cursor:pointer;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:500}
+.search{flex:1;min-width:180px;max-width:280px;margin-left:auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font:inherit;font-size:15px;color:var(--ink)}
+.search:focus,.seg button:focus-visible,.btn:focus-visible{outline:3px solid rgba(0,113,227,.45);outline-offset:2px}
+.catbar{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:22px;scrollbar-width:none}
+.catbar::-webkit-scrollbar{display:none}
+.catbar button{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:999px;font-size:14px;cursor:pointer;white-space:nowrap;color:var(--ink-2)}
+.catbar button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* MARKERS */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.grid{grid-template-columns:1fr}}
+.m{padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px}
+.m .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.m .name{font-size:16px;font-weight:600;letter-spacing:-.015em;line-height:1.25}
+.m .cat{font-size:12px;color:var(--ink-3);margin-top:2px}
+.m .val{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.m .val b{font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.05}
+.m .val .u{font-size:14px;color:var(--ink-2)}
+.m .prev{font-size:13px;color:var(--ink-2)}
+.m .prev .arrow{font-weight:600}
+.m .note{font-size:14px;color:var(--ink-2);line-height:1.42}
+.m .ref{font-size:12px;color:var(--ink-3)}
+.bar{position:relative;height:28px;margin-top:2px}
+.bar .track{position:absolute;left:0;right:0;top:12px;height:5px;border-radius:5px;background:var(--track)}
+.bar .ok{position:absolute;top:12px;height:5px;border-radius:5px;background:var(--range)}
+.bar .pt{position:absolute;top:7px;width:15px;height:15px;margin-left:-7.5px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.bar .pp{position:absolute;top:9.5px;width:10px;height:10px;margin-left:-5px;border-radius:50%;border:2px solid var(--ink-3);background:var(--surface)}
+.m.g .pt{background:var(--good-fill)} .m.a .pt{background:var(--warn-fill)} .m.r .pt{background:var(--bad-fill)}
+.empty{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-2);margin:-6px 0 22px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block}
+.lg-range{width:22px;height:5px;border-radius:5px;background:var(--range)}
+.lg-now{width:12px;height:12px;border-radius:50%;background:var(--ink-2)}
+.lg-prev{width:10px;height:10px;border-radius:50%;border:2px solid var(--ink-3)}
+
+/* TRENDS */
+.trends{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:980px){.trends{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.trends{grid-template-columns:1fr}}
+.tr{padding:22px}
+.tr .h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tr svg.chart{width:100%;height:120px;display:block;margin-top:10px;overflow:visible}
+.tr .verdict{font-size:14px;color:var(--ink-2);margin-top:6px}
+.tr .ln{stroke:var(--ink-3);stroke-width:2;fill:none}
+.tr .lbl{font-size:12px;fill:var(--ink-2);font-family:var(--font)}
+.tr .lblv{font-size:14px;font-weight:600;fill:var(--ink);font-family:var(--font)}
+.tr .tg{stroke:var(--line);stroke-width:1}
+.tr .tband{fill:var(--range)}
+
+/* SNAPSHOT */
+.snap{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:820px){.snap{grid-template-columns:1fr}}
+.timeline{list-style:none;position:relative;margin-top:18px}
+.timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--track)}
+.timeline li{position:relative;padding:0 0 18px 28px}
+.timeline li::before{content:"";position:absolute;left:0;top:6px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--link)}
+.timeline .d{font-size:13px;color:var(--ink-3);font-weight:600}
+.timeline .t{font-size:15px}
+.kv{margin-top:14px;display:grid;gap:10px}
+.kv div{display:flex;justify-content:space-between;gap:12px;font-size:15px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.kv div span:last-child{color:var(--ink-2);text-align:right}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stats div{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.stats b{display:block;font-size:28px;letter-spacing:-.03em}
+.stats small{font-size:12px;color:var(--ink-2)}
+
+/* PLAN TABS */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:20px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:var(--track);padding:10px 18px;border-radius:999px;font-size:15px;cursor:pointer;white-space:nowrap;color:var(--ink-2)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.panel{display:none}
+.panel.on{display:block}
+.panel .cols{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:820px){.panel .cols{grid-template-columns:1fr}}
+.panel h3{margin-bottom:10px}
+.panel p,.panel li{font-size:16px;color:var(--ink-2)}
+.panel p+p{margin-top:10px}
+.panel ul{padding-left:20px;display:grid;gap:8px}
+.panel li b,.panel p b{color:var(--ink);font-weight:600}
+.supp{display:grid;gap:10px}
+.supp .row{display:grid;grid-template-columns:150px 150px 1fr;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
+.supp .row:last-child{border-bottom:0}
+.supp .row b{font-size:15px}
+.supp .row p{font-size:15px;margin:0}
+@media(max-width:620px){.supp .row{grid-template-columns:1fr auto}.supp .row p{grid-column:1/-1}}
+.calc{display:grid;gap:18px}
+.calc input[type=range]{width:100%;accent-color:var(--link)}
+.calc .out{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.calc .out div{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.calc .out b{display:block;font-size:30px;letter-spacing:-.03em}
+.calc .out small{font-size:12px;color:var(--ink-2)}
+.meal{display:grid;gap:8px;margin-top:6px}
+.meal div{display:flex;justify-content:space-between;gap:12px;font-size:15px;border-bottom:1px solid var(--line);padding:8px 0;color:var(--ink-2)}
+.meal div b{color:var(--ink);font-weight:600;white-space:nowrap}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px}
+.week div{border-radius:14px;padding:12px 8px;text-align:center;font-size:13px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.week div b{display:block;color:var(--ink);font-size:14px;margin-bottom:4px}
+.week .st{background:rgba(10,132,255,.1);border-color:rgba(10,132,255,.3)}
+.week .cy{background:var(--good-bg)}
+@media(max-width:620px){.week{grid-template-columns:repeat(4,1fr)}}
+
+/* GP LIST */
+.gp{display:grid;gap:10px}
+.gp label{display:flex;gap:14px;align-items:flex-start;padding:18px 20px;cursor:pointer}
+.gp input{appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--ink-3);margin-top:1px;display:grid;place-items:center;cursor:pointer;transition:background .2s,border-color .2s}
+.gp input:checked{background:var(--good-fill);border-color:var(--good-fill)}
+.gp input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.gp label.done .q{text-decoration:line-through;color:var(--ink-3)}
+.gp .q{font-size:16px;font-weight:500}
+.gp .why{font-size:14px;color:var(--ink-2);margin-top:3px}
+.gp .chip{margin-left:auto;align-self:center}
+
+/* BUTTONS */
+.btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:30px}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-size:17px;cursor:pointer;background:#0071e3;color:#fff;text-decoration:none}
+.btn:hover{text-decoration:none;background:#0077ed}
+.btn.ghost{background:transparent;color:var(--link);border:1px solid var(--link)}
+.btn .shine{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);pointer-events:none}
+
+/* FOOTER */
+footer{padding:50px 0 70px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+footer p+p{margin-top:10px}
+footer ol{padding-left:18px;margin-top:10px;display:grid;gap:4px}
+.disclaimer{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 20px;font-size:14px;color:var(--ink-2);margin-top:26px}
+
+.reveal{opacity:0;transform:translateY(28px)}
+#gl{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;display:block;transition:opacity .2s linear}
+main,footer{position:relative;z-index:1}
+#priorities,#overview{overflow-x:clip}
+.aurora{display:none}.no-gl .aurora{display:block}.no-gl #gl{display:none}
+.hero{min-height:100svh;padding:15vh 0 0;display:flex;flex-direction:column}
+.hero .wrap{width:100%}
+.orbitkey{margin:22px auto 0;display:inline-flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;font-size:14px;color:var(--ink-2);padding:10px 18px;border-radius:999px;background:var(--nav);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
+.orbitkey span{display:inline-flex;align-items:center;gap:6px}
+.scrollcue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:1;width:26px;height:42px;border-radius:14px;border:2px solid var(--ink-3)}
+.scrollcue::after{content:"";position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--ink-2);animation:cue 1.8s ease-in-out infinite}
+@keyframes cue{0%{opacity:0;transform:translateY(0)}30%{opacity:1}100%{opacity:0;transform:translateY(14px)}}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#ff375f,#bf5af2,#0a84ff,#30d158)}
+.card{position:relative}
+.spot{overflow:hidden;will-change:transform}
+.spot::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(380px circle at var(--mx,50%) var(--my,50%),var(--spot),transparent 55%)}
+.spot:hover::after{opacity:1}
+:root{--spot:rgba(10,132,255,.10)}
+:root[data-theme="dark"]{--spot:rgba(255,255,255,.09)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--spot:rgba(255,255,255,.09)}}
+h1 .w{white-space:nowrap}h1 .ch{display:inline-block;transform-origin:50% 100%}
+h2 .wd{display:inline-block}
+section{background:transparent}
+.no-motion .reveal{opacity:1;transform:none}
+@media print{
+  .nav,.aurora,.btns,.controls,.catbar,.tabs,.legend,#gl,.progress,.scrollcue,.orbitkey{display:none!important}
+  .panel{display:block!important;margin-bottom:20px}
+  .reveal{opacity:1!important;transform:none!important}
+  body{background:#fff}
+  .card{box-shadow:none;break-inside:avoid}
+  section{padding:30px 0}
+  .hero{padding:30px 0}
+}
+</style>
+
+<style>
+/* KP additions */
+.progress{background:linear-gradient(90deg,#ff375f,#bf5af2,#5e5ce6,#30d5c8)}
+.aurora .a1{background:#ff375f}.aurora .a2{background:#bf5af2}.aurora .a3{background:#30d5c8}
+.pending{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;color:var(--ink-2)}
+.pending i{width:8px;height:8px;border-radius:50%;background:var(--warn-fill);animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.ecg{width:100%;height:70px;display:block;margin-top:14px}
+.ecg path{fill:none;stroke:var(--bad-fill);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chips span{font-size:14px;background:var(--surface-2);border:1px solid var(--line);padding:6px 12px;border-radius:999px;color:var(--ink)}
+.hud{position:absolute;right:22px;bottom:30px;z-index:1;font-size:12px;color:var(--ink-3);letter-spacing:.02em;text-align:right;line-height:1.5}
+.hud b{color:var(--ink-2);font-weight:600}
+@media(max-width:700px){.hud{display:none}}
+.chapter{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;pointer-events:none;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:7px 14px;border-radius:999px;background:var(--nav);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);opacity:0}
+@media print{.chapter,.hud{display:none!important}}
+</style>
+
+</head>
+<body>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="progress" aria-hidden="true"></div>
+<div class="chapter" id="chapter" aria-hidden="true"></div>
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <div class="brand">KP Health</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#priorities">Priorities</a></li>
+      <li><a href="#bloods">Bloods</a></li>
+      <li><a href="#trends">Trends</a></li>
+      <li><a href="#snapshot">Snapshot</a></li>
+      <li><a href="#plan">Plan</a></li>
+      <li><a href="#gp">GP list</a></li>
+    </ul>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch to black mode"><span id="themeIco"></span><span class="tl" id="themeTxt">Black</span></button>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+  <div class="wrap">
+    <div class="eyebrow">Kalpana Patel · 65</div>
+    <h1 id="headline">Your health, at a glance.</h1>
+    <p class="lede">Your blood, urine and ECG results from 9 October 2026, compared with January 2025. Each one is marked green, amber or red, with plain‑English notes and a plan.</p>
+    <div class="meta">
+      <span class="pill">Latest bloods: 9 Oct 2026</span>
+      <span class="pill">Compared with: 27 Jan 2025</span>
+      <span class="pill">Lab: Suburban Diagnostics, Mumbai</span>
+    </div>
+    <div style="text-align:center"><div class="orbitkey" id="orbitkey">Each light orbiting the core is one of your results:</div></div>
+  </div>
+  <div class="hud" aria-hidden="true"><b id="hudN">0</b> particles · live<br>move your pointer · scroll to morph</div>
+  <div class="scrollcue" aria-hidden="true"></div>
+</header>
+
+<main>
+<section id="overview">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Overview</div>
+      <h2>Healthy, with one clear focus.</h2>
+      <p>Your liver, kidneys, thyroid, blood count and iron are all in good shape, and several results have improved since January 2025. The one area that has clearly moved the wrong way is cholesterol, with blood sugar edging up behind it.</p>
+    </div>
+    <div class="score">
+      <div class="card tile g reveal"><div class="tag"><span class="dot"></span>Good</div><div class="num" data-count="g">0</div><div class="lbl">results in a healthy range</div></div>
+      <div class="card tile a reveal"><div class="tag"><span class="dot"></span>Watch</div><div class="num" data-count="a">0</div><div class="lbl">slightly off, or worth a recheck</div></div>
+      <div class="card tile r reveal"><div class="tag"><span class="dot"></span>Act</div><div class="num" data-count="r">0</div><div class="lbl">need your GP's input soon</div></div>
+      <div class="card tile reveal"><div class="tag" style="color:var(--ink-2)">LDL rise</div><div class="num">+<span data-to="31">0</span>%</div><div class="lbl">since Jan 2025 (118 → 154 mg/dL)</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="priorities" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Priorities</div>
+      <h2>Four things to look at.</h2>
+      <p>In order of importance. None of them is an emergency. The first one is worth booking a GP appointment for. The rest can be raised at the same visit.</p>
+    </div>
+    <div class="prio">
+      <article class="card r reveal">
+        <span class="chip r" data-icon="r">Act · book with GP</span>
+        <h3>Cholesterol has risen sharply</h3>
+        <p>In 20 months, LDL ("bad") cholesterol rose from 118 to 154 mg/dL. Non‑HDL rose from 157 to 190, which the lab classes as "very high", and total cholesterol rose from 205 to 247. This pattern is common after menopause, when falling oestrogen pushes LDL up. South Asian heritage also raises heart risk at any given cholesterol level. The good news is that HDL ("good") cholesterol went up, from 49 to 57.</p>
+        <p class="do"><b>Ask about:</b> a 10‑year heart risk score (QRISK3), a one-off <b>Lp(a)</b> and an <b>ApoB</b> test, and whether a statin is now advised. Start the food changes on the Plan tab now.</p>
+        <div class="nums"><span>LDL 154 mg/dL</span><span>Non‑HDL 190</span><span>Total 247</span><span>HDL 57 ↑</span></div>
+      </article>
+      <article class="card a reveal">
+        <span class="chip a" data-icon="a">Watch · recheck in 6 months</span>
+        <h3>Blood sugar is in the prediabetes range</h3>
+        <p>HbA1c has gone from 5.7% to 5.9%. It's the 3‑month average of your blood sugar, and 5.7–6.4% counts as prediabetes. Fasting glucose is still normal (93). This is the stage where diet and walking work best, and it often goes back to normal.</p>
+        <p class="do"><b>Do:</b> take a 10–15 minute walk after your two biggest meals, cut down on sweets and sugar in chai, and recheck HbA1c in 6 months.</p>
+        <div class="nums"><span>HbA1c 5.9%</span><span>Fasting 93 mg/dL</span></div>
+      </article>
+      <article class="card a reveal">
+        <span class="chip a" data-icon="a">Watch · results pending</span>
+        <h3>ECG: two small findings, echo to follow</h3>
+        <p>Your ECG shows a normal sinus rhythm with an <b>incomplete right bundle branch block</b>. This is a common, usually harmless variation in how the electrical signal travels. The corrected QT interval is <b>462 ms</b>, just over the usual 460 ms upper limit for women. Your echocardiogram and chest X‑ray results haven't come back yet.</p>
+        <p class="do"><b>Do:</b> review the ECG together with the echo when it arrives. Ask whether a <b>magnesium</b> level should be checked, and whether any medicines she takes can lengthen the QT interval.</p>
+        <div class="nums"><span>QTc 462 ms</span><span>Heart rate 93</span><span>Incomplete RBBB</span></div>
+      </article>
+      <article class="card a reveal">
+        <span class="chip a" data-icon="a">Watch</span>
+        <h3>Vitamin D has fallen, and B12 is low‑normal</h3>
+        <p>Vitamin D dropped from 49.6 to 33.3 ng/mL. It's still "sufficient", but it's near the bottom, and none of your current supplements contains vitamin D. You need it to absorb the calcium you take. B12 is 326 pg/mL, which is in range but on the low side for someone over 60. Homocysteine came down from a high 17.8 to 13.1, so the B complex is helping.</p>
+        <p class="do"><b>Do:</b> consider adding vitamin D3 (see the Supplements tab), and recheck vitamin D, B12 and folate at your next bloods.</p>
+        <div class="nums"><span>Vit D 33.3 ↓</span><span>B12 326</span><span>Homocysteine 13.1 ↓</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="bloods" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Bloods</div>
+      <h2>Every result, explained.</h2>
+      <p>Filter by status or body system, and switch units. The green band shows the healthy range, the solid dot is October 2026, and the hollow dot is January 2025.</p>
+    </div>
+    <div class="controls reveal">
+      <div class="seg" role="group" aria-label="Status filter" id="statusSeg">
+        <button aria-pressed="true" data-s="all">All</button>
+        <button aria-pressed="false" data-s="r"><span class="dot r"></span>Act</button>
+        <button aria-pressed="false" data-s="a"><span class="dot a"></span>Watch</button>
+        <button aria-pressed="false" data-s="g"><span class="dot g"></span>Good</button>
+      </div>
+      <div class="seg" role="group" aria-label="Units" id="unitSeg">
+        <button aria-pressed="true" data-u="lab">Lab units</button>
+        <button aria-pressed="false" data-u="uk">UK units</button>
+      </div>
+      <input class="search" id="q" type="search" placeholder="Search, e.g. vitamin D" aria-label="Search results">
+    </div>
+    <div class="catbar reveal" id="catbar" role="group" aria-label="Body system"></div>
+    <div class="legend reveal"><span><i class="lg-range"></i>Healthy range</span><span><i class="lg-now"></i>Oct 2026</span><span><i class="lg-prev"></i>Jan 2025</span></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<section id="trends" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Trends</div>
+      <h2>What's changed in 20 months.</h2>
+      <p>January 2025 compared with October 2026 for the results that matter most for you. The shaded band is the healthy range.</p>
+    </div>
+    <div class="trends" id="trendGrid"></div>
+  </div>
+</section>
+
+<section id="snapshot" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Health snapshot</div>
+      <h2>The bigger picture.</h2>
+    </div>
+    <div class="snap">
+      <div class="card reveal">
+        <h3>Your journey</h3>
+        <ul class="timeline">
+          <li><div class="d">Jan 2025</div><div class="t">Bloods: homocysteine high (17.8), ferritin low‑normal (20.8), AST just over range, LDL 118</div></li>
+          <li><div class="d">2025–26</div><div class="t">Six daily supplements: krill oil, calcium, vitamin E, B complex, magnesium, collagen with biotin</div></li>
+          <li><div class="d">9 Oct 2026</div><div class="t">Bloods: homocysteine, iron and liver all improved. LDL up to 154, HbA1c 5.9%</div></li>
+          <li><div class="d">9 Oct 2026</div><div class="t">ECG: sinus rhythm, incomplete RBBB, QTc 462 ms</div></li>
+          <li><div class="d">Pending</div><div class="t">Echocardiogram and chest X‑ray reports still to come</div></li>
+        </ul>
+        <div class="pending"><i></i>Interim report. Two results still to follow</div>
+      </div>
+      <div style="display:grid;gap:16px">
+        <div class="card reveal">
+          <h3>Heart tracing (ECG)</h3>
+          <svg class="ecg" viewBox="0 0 600 70" preserveAspectRatio="none" aria-hidden="true"><path id="ecgPath" pathLength="1" d="M0,40 L60,40 L70,34 L80,40 L95,40 L100,46 L108,6 L116,58 L122,40 L150,40 L165,30 L185,40 L240,40 L250,34 L260,40 L275,40 L280,46 L288,6 L296,58 L302,40 L330,40 L345,30 L365,40 L420,40 L430,34 L440,40 L455,40 L460,46 L468,6 L476,58 L482,40 L510,40 L525,30 L545,40 L600,40"/></svg>
+          <div class="stats">
+            <div><b data-to="93">0</b><small>bpm heart rate</small></div>
+            <div><b data-to="462">0</b><small>ms QTc</small></div>
+            <div><b data-to="146">0</b><small>ms PR interval</small></div>
+          </div>
+        </div>
+        <div class="card reveal">
+          <h3>Daily supplements</h3>
+          <div class="chips"><span>Krill oil</span><span>Calcium</span><span>Vitamin E</span><span>B complex</span><span>Magnesium</span><span>Collagen + biotin</span></div>
+          <div class="kv" style="margin-top:16px">
+            <div><span>Infection screen</span><span>Hepatitis B, C and HIV all non‑reactive</span></div>
+            <div><span>Clotting (INR)</span><span>0.97, normal</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="plan" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Your plan</div>
+      <h2>Supplements and next steps.</h2>
+      <p>Based on your results and the current evidence. Agree any changes with your GP or pharmacist first.</p>
+    </div>
+    <div class="tabs reveal" role="tablist" id="tabs">
+      <button role="tab" aria-selected="true" data-t="supp">Supplements</button>
+      <button role="tab" aria-selected="false" data-t="chol">Cholesterol</button>
+      <button role="tab" aria-selected="false" data-t="sugar">Blood sugar</button>
+      <button role="tab" aria-selected="false" data-t="bone">Bones &amp; strength</button>
+      <button role="tab" aria-selected="false" data-t="tests">Next bloods</button>
+    </div>
+
+    <div class="panel on reveal" id="p-supp" role="tabpanel">
+      <div class="card">
+        <h3>Swap two, add two.</h3>
+        <p>Your six supplements are mostly sensible. The B complex is clearly doing its job. Vitamin E is the one to drop. The biotin in the collagen (and often in B complexes) can distort thyroid and some heart blood tests. Vitamin D and a soluble fibre such as isabgol are the two additions that fit your results best.</p>
+        <div class="supp" id="suppList" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-chol" role="tabpanel">
+      <div class="cols">
+        <div class="card">
+          <h3>Why it may have risen</h3>
+          <ul>
+            <li><b>Menopause.</b> Falling oestrogen raises LDL by roughly 10–20% in the years around and after menopause. That's the most likely driver.</li>
+            <li><b>Thyroid is not the cause.</b> TSH is normal (2.32), so that's ruled out.</li>
+            <li><b>Diet.</b> Ghee, butter, coconut oil, paneer, full-fat dairy, fried snacks (farsan) and mithai all push LDL up.</li>
+            <li><b>Inheritance.</b> Lp(a) is inherited and isn't on a standard lipid panel. A single test tells you whether it adds to your risk.</li>
+          </ul>
+          <p style="margin-top:12px"><b>What's good:</b> HDL is up (49 → 57), triglycerides are slightly down (194 → 181) and inflammation (hs‑CRP 1.72) is only average.</p>
+        </div>
+        <div class="card">
+          <h3>What helps (roughly how much LDL falls)</h3>
+          <ul>
+            <li><b>Soluble fibre, 7–10 g a day</b> from oats, isabgol (psyllium), rajma, chana and dal: about 5–10%.</li>
+            <li><b>Swap saturated fats</b> (ghee, butter, coconut and palm oil) for mustard, groundnut or olive oil: about 5–10%.</li>
+            <li><b>Plant sterols, about 2 g a day</b> from fortified milk, yoghurt or spreads: about 7–10%.</li>
+            <li><b>A handful of nuts</b> (30 g almonds or walnuts) every day: about 3–5%.</li>
+            <li><b>150 minutes a week of brisk walking</b>, plus strength work twice a week. This mainly raises HDL and lowers triglycerides.</li>
+          </ul>
+          <p style="margin-top:12px">Together, these can lower LDL by about 20–25%. That could bring 154 back to around 115–125. If your risk score is high or Lp(a) is raised, a statin may still be advised, and that's a decision to make with your GP.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-sugar" role="tabpanel">
+      <div class="cols">
+        <div class="card">
+          <h3>Prediabetes is reversible.</h3>
+          <p>An HbA1c of 5.9% means slightly too much sugar has been in your blood over the last 2–3 months. Without changes, about 5–10% of people in this range develop type 2 diabetes each year. With changes, many go back to normal.</p>
+          <p>One note: <b>large doses of vitamin E can make HbA1c read falsely low</b> (the lab report mentions this). So your true value could be slightly higher, which is one more reason to stop it.</p>
+        </div>
+        <div class="card">
+          <h3>What works best</h3>
+          <ul>
+            <li><b>Walk 10–15 minutes after lunch and dinner.</b> This blunts the after-meal sugar spike more than one long walk does.</li>
+            <li><b>Eat vegetables, dal or protein first</b>, and rice or roti last.</li>
+            <li><b>Swap white rice and maida</b> for brown rice, millets (jowar, bajra, ragi) or multigrain roti.</li>
+            <li><b>Cut out sugar in chai</b>, and keep mithai and fruit juice to occasional treats.</li>
+            <li><b>Strength training twice a week.</b> Muscle is where most blood sugar gets stored.</li>
+            <li>If you're carrying extra weight around the middle, losing even 5% makes a measurable difference.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-bone" role="tabpanel">
+      <div class="cols">
+        <div class="card">
+          <h3>Protect your bones</h3>
+          <p>After menopause, women can lose up to 2% of their bone density a year. You're already taking calcium, so the gaps are <b>vitamin D</b> (falling) and <b>weight-bearing exercise</b>.</p>
+          <ul style="margin-top:12px">
+            <li><b>Calcium:</b> aim for 1,000–1,200 mg a day <i>in total</i>. Food comes first: dahi, milk, paneer, ragi, sesame, tofu, green leafy vegetables. Then top up with a supplement of no more than 500 mg at a time, taken with a meal.</li>
+            <li><b>Vitamin D3:</b> 1,000–2,000 IU a day, then recheck after 3 months.</li>
+            <li><b>Ask about a DEXA bone-density scan</b> if you haven't had one since menopause.</li>
+            <li><b>Balance work:</b> stand on one leg while brushing your teeth, or try yoga or tai chi. Preventing a fall matters as much as bone density does.</li>
+          </ul>
+        </div>
+        <div class="card calc">
+          <div>
+            <h3>Your protein target</h3>
+            <p>Muscle and bone both need protein. For women over 60, experts recommend 1.0–1.2 g per kg of body weight a day, spread across meals. Move the slider to your weight.</p>
+          </div>
+          <label for="wt" style="font-size:15px">Body weight: <b id="wtv">60</b> kg</label>
+          <input id="wt" type="range" min="40" max="100" value="60" step="1">
+          <div class="out">
+            <div><b id="pLo">60</b><small>g/day minimum</small></div>
+            <div><b id="pHi">72</b><small>g/day ideal</small></div>
+            <div><b id="pMeal">24</b><small>g per meal (×3)</small></div>
+          </div>
+          <p style="font-size:14px">Easy sources: dahi or Greek yoghurt, paneer, tofu, eggs, dal, chana, rajma, sprouts and milk. Collagen powder counts towards your total, but it's an incomplete protein, so it doesn't replace these foods.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="p-tests" role="tabpanel">
+      <div class="cols">
+        <div class="card">
+          <h3>Tests to add next time</h3>
+          <ul>
+            <li><b>Lipoprotein(a):</b> needed only once in a lifetime. It shows whether inherited cholesterol risk is part of the picture.</li>
+            <li><b>ApoB:</b> a more precise measure of the particles that cause plaque.</li>
+            <li><b>Magnesium:</b> you take it, but it has never been measured. It also matters for the QT interval.</li>
+            <li><b>Folate</b> (and active B12 if your GP agrees): this completes the homocysteine picture.</li>
+            <li><b>Fasting insulin:</b> shows how hard your body is working to keep sugar normal.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>When and how</h3>
+          <ul>
+            <li><b>In 3 months:</b> vitamin D (if you start D3), lipid profile and Lp(a)/ApoB.</li>
+            <li><b>In 6 months:</b> HbA1c, B12, folate, homocysteine and magnesium.</li>
+            <li><b>Stop biotin for 3 days</b> before any blood test. That includes collagen with biotin and most B complexes. Biotin can make thyroid and some heart test results unreliable.</li>
+            <li>Fast for 10–12 hours (water is fine). Do the test early in the morning, after a normal night's sleep.</li>
+            <li>For urine, use a <b>clean-catch midstream</b> sample. Last time's bacteria were most likely contamination.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="gp" style="padding-top:20px">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Take to your GP</div>
+      <h2>Your appointment checklist.</h2>
+      <p>Tick items off as you go. Ticks are saved in this browser.</p>
+    </div>
+    <div class="gp" id="gpList"></div>
+    <div class="btns">
+      <button class="btn" id="printBtn"><span class="shine"></span>Print or save as PDF</button>
+      <a class="btn ghost" href="#top">Back to top</a>
+    </div>
+    <div class="disclaimer">This dashboard is for discussion with your GP and isn't medical advice. Ranges come from your lab reports. Don't start, stop or change any medicine or supplement without speaking to your doctor or pharmacist. The October 2026 report is marked "Interim": the echocardiogram and chest X‑ray are still to follow.</div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Sources</b></p>
+    <ol>
+      <li>NICE NG238 (2023): Cardiovascular disease, risk assessment and reduction, including lipid modification, and the QRISK3 calculator.</li>
+      <li>ESC/EAS 2019 dyslipidaemia guidelines: measure Lp(a) at least once in each adult's lifetime.</li>
+      <li>American Diabetes Association, Standards of Care 2025: HbA1c 5.7–6.4% defines prediabetes.</li>
+      <li>Diabetes Prevention Program Research Group, NEJM 2002: lifestyle change cut progression to diabetes by 58%.</li>
+      <li>Miller et al., Ann Intern Med 2005: high-dose vitamin E and all-cause mortality (meta-analysis).</li>
+      <li>US FDA safety communication (2017, updated 2019): biotin interference with lab tests.</li>
+      <li>Jovanovski et al., Am J Clin Nutr 2018: psyllium and LDL cholesterol (meta-analysis).</li>
+      <li>Gylling et al., EAS consensus 2014: plant sterols lower LDL by about 8–10% at 2 g a day.</li>
+      <li>Rautaharju et al., AHA/ACCF/HRS 2009: QTc above 460 ms in women is prolonged.</li>
+      <li>Bauer et al. (PROT-AGE), JAMDA 2013: protein needs of older adults.</li>
+    </ol>
+    <p>Built 16 October 2026 from Suburban Diagnostics lab no. 397165774 (9 Oct 2026, interim), ECG of 9 Oct 2026, and the January 2025 report (collected 27 Jan 2025).</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+<script>
+(function(){
+"use strict";
+/* ---------- DATA ---------- */
+/* dir: 'range' (lo-hi), 'max' (below hi is good), 'min' (above lo is good), 'text' */
+const MG={u:"mmol/L",f:1/38.67,d:2};
+const M = [
+ // Heart & lipids
+ {n:"LDL cholesterol",c:"Heart",u:"mg/dL",now:154,prev:117.8,lo:0,hi:100,dir:"max",s:"r",k:MG,ref:"Optimal <100 · borderline-high 130–159 · high ≥160",note:"Up 31% from 118. Close to the 'high' line. The main thing to discuss with your GP."},
+ {n:"Non-HDL cholesterol",c:"Heart",u:"mg/dL",now:190,prev:156.6,lo:0,hi:130,dir:"max",s:"r",k:MG,ref:"Desirable <130 · very high ≥190",note:"All the cholesterol carried by harmful particles. It's now at the lab's 'very high' cut-off."},
+ {n:"Total cholesterol",c:"Heart",u:"mg/dL",now:247,prev:205.4,lo:0,hi:200,dir:"max",s:"r",k:MG,ref:"Desirable <200 · high ≥240",note:"Up from 205. LDL and non-HDL tell you more than this number."},
+ {n:"HDL cholesterol",c:"Heart",u:"mg/dL",now:57,prev:48.8,lo:40,hi:90,dir:"min",s:"g",k:MG,ref:"Healthy >40 · lab ideal >60",note:"Nicely up from 49. Good news, and exercise pushes it higher."},
+ {n:"Triglycerides",c:"Heart",u:"mg/dL",now:181,prev:194,lo:0,hi:150,dir:"max",s:"a",k:{u:"mmol/L",f:1/88.57,d:2},ref:"Normal <150 · borderline 150–199",note:"Slightly down, but still borderline. Sugar, sweets and refined carbs drive this up."},
+ {n:"VLDL cholesterol",c:"Heart",u:"mg/dL",now:36,prev:38.8,lo:0,hi:30,dir:"max",s:"a",k:MG,ref:"≤30",note:"Moves with triglycerides. Slightly high."},
+ {n:"Total/HDL ratio",c:"Heart",u:"",now:4.33,prev:4.21,lo:0,hi:4.5,dir:"max",s:"g",ref:"<4.5",note:"Still under 4.5, thanks to your higher HDL."},
+ {n:"Homocysteine",c:"Heart",u:"µmol/L",now:13.14,prev:17.79,lo:4.44,hi:13.56,dir:"range",s:"a",ref:"4.44–13.56 (Jan range 3.7–13.9)",note:"Down from a high 17.8. The B complex is working. It's still near the top of the range, so keep it going."},
+ // Inflammation
+ {n:"hs-CRP",c:"Inflammation",u:"mg/L",now:1.72,prev:1.2,lo:0,hi:1,dir:"max",s:"a",ref:"Low CV risk <1.0 · average 1–3",note:"Average heart-risk range, up slightly. Regular exercise and weight control bring it down."},
+ {n:"ESR",c:"Inflammation",u:"mm/hr",now:14,prev:19,lo:2,hi:30,dir:"range",s:"g",ref:"2–30",note:"Normal, and lower than before."},
+ // Sugar
+ {n:"HbA1c",c:"Blood sugar",u:"%",now:5.9,prev:5.7,lo:4,hi:5.7,dir:"max",s:"a",k:{u:"mmol/mol",fn:v=>(v-2.15)*10.929,d:0},ref:"Normal <5.7% · prediabetes 5.7–6.4%",note:"Up from 5.7%. In the prediabetes range, which responds very well to diet and walking."},
+ {n:"Fasting glucose",c:"Blood sugar",u:"mg/dL",now:93.4,prev:81.7,lo:70,hi:100,dir:"range",s:"g",k:{u:"mmol/L",f:1/18.02,d:1},ref:"Normal <100",note:"Normal, though higher than last time."},
+ // Kidney
+ {n:"eGFR",c:"Kidney",u:"mL/min",now:97.24,prev:101,lo:60,hi:120,dir:"min",s:"g",ref:"Normal >90",note:"Excellent kidney function."},
+ {n:"Creatinine",c:"Kidney",u:"mg/dL",now:0.68,prev:0.58,lo:0.51,hi:0.95,dir:"range",s:"g",k:{u:"µmol/L",f:88.4,d:0},ref:"0.51–0.95",note:"Normal."},
+ {n:"Urea",c:"Kidney",u:"mg/dL",now:37.5,prev:26.6,lo:17,hi:43,dir:"range",s:"g",k:{u:"mmol/L",f:1/6.006,d:1},ref:"17–43",note:"Normal. A little higher than before, which often just means drinking less water."},
+ {n:"Uric acid",c:"Kidney",u:"mg/dL",now:6.0,prev:5.3,lo:2.6,hi:6.0,dir:"range",s:"a",k:{u:"µmol/L",f:59.48,d:0},ref:"2.6–6.0",note:"Right at the top of the range. Drink more water, and limit sugary drinks and very large portions of red meat or seafood."},
+ {n:"Sodium",c:"Kidney",u:"mEq/L",now:139,prev:143,lo:136,hi:146,dir:"range",s:"g",ref:"136–146",note:"Normal."},
+ {n:"Potassium",c:"Kidney",u:"mEq/L",now:4.4,prev:4.8,lo:3.5,hi:5.1,dir:"range",s:"g",ref:"3.5–5.1",note:"Normal."},
+ {n:"Chloride",c:"Kidney",u:"mEq/L",now:106,prev:108,lo:101,hi:109,dir:"range",s:"g",ref:"101–109 (Jan range 98–107)",note:"Slightly high in January. Normal now."},
+ // Bone & minerals
+ {n:"Vitamin D",c:"Bone & minerals",u:"ng/mL",now:33.3,prev:49.6,lo:30,hi:100,dir:"range",s:"a",k:{u:"nmol/L",f:2.496,d:0},ref:"Sufficient 30–100",note:"Down by a third, now close to the 'insufficient' line. Your supplements don't include vitamin D. Consider adding D3."},
+ {n:"Calcium",c:"Bone & minerals",u:"mg/dL",now:9.8,prev:9.4,lo:8.8,hi:10.2,dir:"range",s:"g",k:{u:"mmol/L",f:1/4.008,d:2},ref:"8.8–10.2",note:"Normal, in the upper half. No need to raise your supplement dose."},
+ {n:"Phosphorus",c:"Bone & minerals",u:"mg/dL",now:3.6,prev:3.3,lo:2.8,hi:4.0,dir:"range",s:"g",k:{u:"mmol/L",f:1/3.097,d:2},ref:"2.8–4.0",note:"Normal."},
+ // Iron & vitamins
+ {n:"Ferritin (iron stores)",c:"Iron & vitamins",u:"ng/mL",now:36.3,prev:20.8,lo:15,hi:291,dir:"range",s:"g",ref:"10–291 (adequate stores >30)",note:"Up from 20.8. Iron stores are now adequate, though still on the lower side."},
+ {n:"Serum iron",c:"Iron & vitamins",u:"µg/dL",now:103.3,prev:62.8,lo:50,hi:170,dir:"range",s:"g",ref:"50–170",note:"Clearly up. Healthy."},
+ {n:"Transferrin saturation",c:"Iron & vitamins",u:"%",now:23.35,prev:15.6,lo:15,hi:45,dir:"range",s:"g",ref:"15–45",note:"Up from the bottom of the range. Good."},
+ {n:"Vitamin B12",c:"Iron & vitamins",u:"pg/mL",now:326,prev:252,lo:197,hi:771,dir:"range",s:"a",k:{u:"pmol/L",f:0.738,d:0},ref:"197–771",note:"Improved, but still low-normal. After 60 the gut absorbs B12 less well. Many doctors prefer it above 400."},
+ // Blood count
+ {n:"Haemoglobin",c:"Blood count",u:"g/dL",now:12.8,prev:12.9,lo:12,hi:15,dir:"range",s:"g",k:{u:"g/L",f:10,d:0},ref:"12.0–15.0",note:"Normal and stable."},
+ {n:"Red blood cells",c:"Blood count",u:"mil/cmm",now:4.5,prev:4.42,lo:3.8,hi:4.8,dir:"range",s:"g",ref:"3.8–4.8",note:"Normal."},
+ {n:"RDW",c:"Blood count",u:"%",now:12.8,prev:13.9,lo:11.6,hi:14,dir:"range",s:"g",ref:"11.6–14.0",note:"Lower and more uniform. This fits with the improved iron."},
+ {n:"White cells",c:"Blood count",u:"/cmm",now:5760,prev:4820,lo:4000,hi:10000,dir:"range",s:"g",ref:"4,000–10,000",note:"Normal."},
+ {n:"Monocytes",c:"Blood count",u:"%",now:10.5,prev:8.6,lo:2,hi:10,dir:"range",s:"g",ref:"2–10 % (absolute 605, normal)",note:"The percentage is a fraction over, but the absolute count is normal. Not a concern."},
+ {n:"Eosinophils",c:"Blood count",u:"%",now:5.6,prev:4.5,lo:1,hi:6,dir:"range",s:"g",ref:"1–6",note:"Normal. Allergies can nudge this up."},
+ {n:"Platelets",c:"Blood count",u:"/cmm",now:289000,prev:323000,lo:150000,hi:410000,dir:"range",s:"g",ref:"150,000–410,000",note:"Normal."},
+ // Liver
+ {n:"AST (liver)",c:"Liver",u:"U/L",now:28.3,prev:36.1,lo:0,hi:35,dir:"max",s:"g",ref:"<35 (Jan <34)",note:"Slightly high in January. Back to normal now."},
+ {n:"ALT (liver)",c:"Liver",u:"U/L",now:31.6,prev:37.5,lo:0,hi:35,dir:"max",s:"g",ref:"<35",note:"Normal and lower than before."},
+ {n:"Gamma GT",c:"Liver",u:"U/L",now:19.6,prev:14.7,lo:0,hi:38,dir:"max",s:"g",ref:"<38",note:"Normal."},
+ {n:"Alkaline phosphatase",c:"Liver",u:"U/L",now:78.4,prev:75.5,lo:30,hi:120,dir:"range",s:"g",ref:"30–120",note:"Normal (it's also a bone marker)."},
+ {n:"Bilirubin",c:"Liver",u:"mg/dL",now:0.57,prev:0.3,lo:0.2,hi:1.1,dir:"range",s:"g",k:{u:"µmol/L",f:17.1,d:0},ref:"0.2–1.1",note:"Normal."},
+ {n:"Albumin",c:"Liver",u:"g/dL",now:4.3,prev:4.2,lo:3.5,hi:5.2,dir:"range",s:"g",k:{u:"g/L",f:10,d:0},ref:"3.5–5.2",note:"Good. A sign of good nutrition."},
+ {n:"Globulin",c:"Liver",u:"g/dL",now:3.4,prev:2.7,lo:2.3,hi:3.5,dir:"range",s:"g",k:{u:"g/L",f:10,d:0},ref:"2.3–3.5",note:"Normal, but at the upper end and higher than before. Worth seeing on the next test."},
+ // Thyroid & other
+ {n:"TSH (thyroid)",c:"Thyroid & other",u:"µIU/mL",now:2.32,prev:1.566,lo:0.35,hi:5.5,dir:"range",s:"g",ref:"0.35–5.50",note:"Normal. Stop biotin for 3 days before the next test so the reading is reliable."},
+ {n:"Free T4",c:"Thyroid & other",u:"pmol/L",now:16.6,prev:14.7,lo:11.5,hi:22.7,dir:"range",s:"g",ref:"11.5–22.7",note:"Normal."},
+ {n:"Free T3",c:"Thyroid & other",u:"pmol/L",now:5.25,prev:5.2,lo:3.5,hi:6.5,dir:"range",s:"g",ref:"3.5–6.5",note:"Normal."},
+ {n:"INR (clotting)",c:"Thyroid & other",u:"",now:0.97,prev:null,lo:0.82,hi:1.16,dir:"range",s:"g",ref:"0.82–1.16",note:"Normal clotting."},
+ {n:"Hepatitis B, C & HIV",c:"Thyroid & other",txt:"Negative",ptxt:"not tested",ref:"Non-reactive",dir:"text",s:"g",note:"All three are non-reactive."},
+ // ECG
+ {n:"QTc interval",c:"ECG",u:"ms",now:462,prev:null,lo:350,hi:460,dir:"max",s:"a",ref:"Women: normal ≤460 ms",note:"Just over the line. Ask whether to check magnesium and review any medicines. The echo will add context."},
+ {n:"Heart rate",c:"ECG",u:"bpm",now:93,prev:null,lo:60,hi:100,dir:"range",s:"g",ref:"60–100",note:"Normal, on the higher side. Nerves on test day often do this."},
+ {n:"ECG rhythm",c:"ECG",txt:"Sinus, iRBBB",ptxt:"no previous ECG",ref:"Sinus rhythm",dir:"text",s:"a",note:"Normal rhythm. Incomplete right bundle branch block is usually a harmless variant. Have it reviewed alongside the echo."},
+ // Urine
+ {n:"Urine: pus cells",c:"Urine",u:"/hpf",now:5.1,prev:3.3,lo:0,hi:5,dir:"max",s:"a",ref:"0–5",note:"A fraction over. Only repeat it if you have burning, frequency or urgency."},
+ {n:"Urine: bacteria",c:"Urine",u:"/hpf",now:30,prev:72.6,lo:0,hi:29.5,dir:"max",s:"a",ref:"0–29.5",note:"Much lower than January and nitrite is negative, so it's probably contamination. Use a midstream sample next time."},
+ {n:"Urine: protein & glucose",c:"Urine",txt:"Absent",ptxt:"Absent",ref:"Absent",dir:"text",s:"g",note:"Normal."}
+];
+
+const TRENDS = [
+ {n:"LDL cholesterol",u:"mg/dL",a:117.8,b:154,lo:0,hi:100,s:"r",v:"Up 31%"},
+ {n:"HbA1c",u:"%",a:5.7,b:5.9,lo:4,hi:5.7,s:"a",v:"Into prediabetes range"},
+ {n:"Vitamin D",u:"ng/mL",a:49.6,b:33.3,lo:30,hi:100,s:"a",v:"Down by a third"},
+ {n:"Homocysteine",u:"µmol/L",a:17.79,b:13.14,lo:4.44,hi:13.56,s:"g",v:"Back in range"},
+ {n:"Ferritin",u:"ng/mL",a:20.8,b:36.3,lo:30,hi:150,s:"g",v:"Iron stores up 75%"},
+ {n:"HDL cholesterol",u:"mg/dL",a:48.8,b:57,lo:60,hi:90,s:"g",v:"Nicely up"}
+];
+
+const SUPP = [
+ {n:"Krill oil",s:"g",l:"Keep",t:"Fine to continue. Krill gives only a small dose of omega‑3, so oily fish twice a week (or walnuts, flax and chia if vegetarian) adds more. It won't lower LDL on its own."},
+ {n:"B complex",s:"g",l:"Keep",t:"Homocysteine fell from 17.8 to 13.1 and B12 rose, so it's working. Ideally choose one with at least 500 mcg B12 (methylcobalamin) and folate. Check the label for biotin."},
+ {n:"Magnesium",s:"g",l:"Keep",t:"Sensible, and useful for the QT interval, sleep and blood sugar. Take it in the evening, at a different time from calcium. Ask for a blood magnesium test next time."},
+ {n:"Calcium",s:"a",l:"Review dose",t:"Your blood calcium is normal (9.8). Get most of it from food (dahi, milk, paneer, ragi, sesame) and keep any supplement to 500 mg or less, taken with a meal. Calcium blocks iron absorption, so take them apart."},
+ {n:"Collagen + biotin",s:"a",l:"Optional",t:"The evidence for skin and joints is modest. The bigger issue is biotin, which can distort thyroid and some heart test results. If you keep it, stop it for 3 days before blood tests."},
+ {n:"Vitamin E",s:"r",l:"Consider stopping",t:"Large trials found no benefit for heart or cancer prevention. Doses of 400 IU or more were linked with higher mortality and bleeding (haemorrhagic) stroke. It can also make HbA1c read falsely low. Food sources (nuts, seeds) are enough."},
+ {n:"Vitamin D3 (new)",s:"g",l:"Consider adding",t:"Your level fell from 49.6 to 33.3, and you need vitamin D to absorb calcium. 1,000–2,000 IU a day with a meal, then recheck in 3 months."},
+ {n:"Isabgol / psyllium (new)",s:"g",l:"Consider adding",t:"1–2 teaspoons (5–10 g) a day in water, before meals. This kind of fibre lowers LDL by about 5–10% and also helps blood sugar. Take it at least 2 hours apart from other supplements and medicines."},
+ {n:"Plant sterols (food)",s:"g",l:"Optional",t:"About 2 g a day from fortified milk, yoghurt drinks or spreads lowers LDL by about 7–10%. It's a food rather than a pill."},
+ {n:"Red yeast rice",s:"a",l:"Avoid for now",t:"It's often sold for cholesterol, but it's effectively an unregulated statin with variable strength. Decide on cholesterol treatment with your GP instead."}
+];
+
+const GP = [
+ {q:"Cholesterol: what's my 10‑year heart risk, and do I need a statin?",w:"LDL 154 (was 118), non‑HDL 190, total 247. Ask for QRISK3, plus Lp(a) and ApoB.",s:"r"},
+ {q:"Review the ECG with the echo and chest X‑ray results",w:"Incomplete RBBB, QTc 462 ms, heart rate 93. Echo and X‑ray still pending.",s:"a"},
+ {q:"HbA1c 5.9%: prediabetes plan and recheck date",w:"Up from 5.7%. Fasting glucose normal (93). Recheck in 6 months.",s:"a"},
+ {q:"Should I take vitamin D3, and at what dose?",w:"Fell from 49.6 to 33.3 ng/mL while taking calcium.",s:"a"},
+ {q:"B12 326 and homocysteine 13.1: check folate and active B12?",w:"Homocysteine was 17.8 in Jan 2025. On a B complex.",s:"a"},
+ {q:"Am I due a DEXA bone-density scan?",w:"Post‑menopausal, on calcium, vitamin D falling.",s:"a"},
+ {q:"Add magnesium to the next blood test",w:"Never measured. Relevant to the QTc and to the supplement.",s:"g"},
+ {q:"Pharmacist review: stop vitamin E, pause biotin before tests",w:"Six supplements. Vitamin E evidence and biotin lab interference.",s:"g"},
+ {q:"Are my routine screenings up to date?",w:"Mammogram, cervical screening and bowel screening for my age.",s:"g"},
+ {q:"Repeat urine test only if symptoms",w:"Pus cells 5.1, bacteria 30. Nitrite and protein negative.",s:"g"}
+];
+
+/* ---------- HELPERS ---------- */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const LBL={g:"Good",a:"Watch",r:"Act"};
+const ICON={
+  g:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2l2.2 2.2 4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  a:'<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 3.6v2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="6" cy="8.4" r=".9" fill="currentColor"/></svg>',
+  r:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.6l4.6 8.2H1.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 4.8v2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="6" cy="8.4" r=".8" fill="currentColor"/></svg>'
+};
+const chip=(s,txt)=>`<span class="chip ${s}">${ICON[s]}${txt||LBL[s]}</span>`;
+$$('[data-icon]').forEach(el=>{el.insertAdjacentHTML('afterbegin',ICON[el.dataset.icon]);});
+const fmt=(v,d)=>{if(v==null)return"";if(d!=null)return Number(v).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});return Number(v).toLocaleString('en-GB',{maximumFractionDigits:Math.abs(v)>=1000?0:(Math.abs(v)>=100?1:2)});};
+let units="lab", fStatus="all", fCat="All", q="";
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function conv(m,v){if(v==null)return null;if(units==="uk"&&m.k){return m.k.fn?m.k.fn(v):v*m.k.f;}return v;}
+function unitOf(m){return (units==="uk"&&m.k)?m.k.u:m.u;}
+function decOf(m){return (units==="uk"&&m.k)?m.k.d:undefined;}
+
+function barHTML(m){
+  if(m.dir==="text")return"";
+  const vals=[m.now,m.prev,m.lo,m.hi].filter(v=>v!=null);
+  let mn=Math.min(...vals), mx=Math.max(...vals);
+  if(m.dir==="max"&&m.lo===0) mn=0;
+  const pad=(mx-mn)*0.12||1; mx+=pad; if(mn>0) mn=Math.max(0,mn-pad);
+  const p=v=>((v-mn)/(mx-mn)*100).toFixed(2);
+  const okL=p(m.lo), okW=(p(m.hi)-p(m.lo)).toFixed(2);
+  const prev=m.prev!=null?`<span class="pp" style="left:${p(m.prev)}%" title="Jan 2025: ${fmt(m.prev)}"></span>`:"";
+  return `<div class="bar" role="img" aria-label="${m.n}: ${fmt(m.now)} ${m.u}; healthy range ${m.ref}"><span class="track"></span><span class="ok" style="left:${okL}%;width:${okW}%"></span>${prev}<span class="pt" style="left:${p(m.now)}%" title="Oct 2026: ${fmt(m.now)}"></span></div>`;
+}
+function trendArrow(m){
+  if(m.prev==null||m.dir==="text")return"";
+  const d=m.now-m.prev; if(Math.abs(d)<1e-9)return"→";
+  return d>0?"↑":"↓";
+}
+function card(m){
+  const u=unitOf(m), d=decOf(m);
+  const valHTML=m.dir==="text"?`<b>${m.txt}</b>`:`<b>${fmt(conv(m,m.now),d)}</b><span class="u">${u}</span>`;
+  let prev="";
+  if(m.dir==="text") prev=`Jan 2025: ${m.ptxt}`;
+  else if(m.prev!=null) prev=`<span class="arrow">${trendArrow(m)}</span> from ${fmt(conv(m,m.prev),d)} in Jan 2025`;
+  else prev="New test, not done in Jan 2025";
+  return `<article class="card m spot ${m.s}" data-s="${m.s}" data-c="${m.c}">
+    <div class="top"><div><div class="name">${m.n}</div><div class="cat">${m.c}</div></div>${chip(m.s)}</div>
+    <div class="val">${valHTML}</div>
+    ${barHTML(m)}
+    <div class="prev">${prev}</div>
+    <div class="note">${m.note}</div>
+    <div class="ref">Range: ${m.ref}</div>
+  </article>`;
+}
+
+/* counts */
+const counts={g:0,a:0,r:0}; M.forEach(m=>counts[m.s]++);
+$$('[data-count]').forEach(el=>el.dataset.to=counts[el.dataset.count]);
+window.__kpCounts=counts;
+$('#orbitkey').insertAdjacentHTML('beforeend',` <span><i class="dot g"></i>${counts.g} good</span><span><i class="dot a"></i>${counts.a} watch</span><span><i class="dot r"></i>${counts.r} act</span>`);
+
+/* categories */
+const cats=["All",...new Set(M.map(m=>m.c))];
+$('#catbar').innerHTML=cats.map(c=>`<button aria-pressed="${c==="All"}" data-c="${c}">${c}</button>`).join("");
+
+const order={r:0,a:1,g:2};
+function render(animate){
+  const list=M.filter(m=>(fStatus==="all"||m.s===fStatus)&&(fCat==="All"||m.c===fCat)&&(!q||(m.n+" "+m.c).toLowerCase().includes(q)))
+              .sort((x,y)=>order[x.s]-order[y.s]);
+  $('#grid').innerHTML=list.length?list.map(card).join(""):`<div class="empty">No results match. Try another filter.</div>`;
+  if(animate&&window.gsap&&!reduced){
+    gsap.fromTo('#grid .m',{opacity:0,y:18,scale:.96},{opacity:1,y:0,scale:1,duration:.5,stagger:.03,ease:"back.out(1.6)"});
+    gsap.from('#grid .pt',{left:"0%",duration:.9,ease:"power3.out",stagger:.02});
+  }
+}
+
+/* trends svg */
+function trendSVG(t){
+  const W=300,H=120,L=36,R=52,T=16,B=26;
+  let mn=Math.min(t.a,t.b,t.lo), mx=Math.max(t.a,t.b,t.hi);
+  const pad=(mx-mn)*.15; mn=Math.max(0,mn-pad); mx+=pad;
+  const y=v=>T+(H-T-B)*(1-(v-mn)/(mx-mn));
+  const x1=L, x2=W-R;
+  const col={g:"var(--good-fill)",a:"var(--warn-fill)",r:"var(--bad-fill)"}[t.s];
+  const yb1=y(Math.min(t.hi,mx)), yb2=y(Math.max(t.lo,mn));
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t.n}: ${t.a} in Jan 2025, ${t.b} in Oct 2026">
+    <rect class="tband" x="${x1}" y="${yb1}" width="${x2-x1}" height="${Math.max(0,yb2-yb1)}" rx="4"/>
+    <line class="tg" x1="${x1}" x2="${x2}" y1="${H-B}" y2="${H-B}"/>
+    <path class="ln" d="M${x1},${y(t.a)} L${x2},${y(t.b)}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0"/>
+    <circle cx="${x1}" cy="${y(t.a)}" r="5" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="2"/>
+    <circle class="end" cx="${x2}" cy="${y(t.b)}" r="7" fill="${col}" stroke="var(--surface)" stroke-width="2"/>
+    <text class="lblv" x="${x1-8}" y="${y(t.a)+5}" text-anchor="end">${fmt(t.a)}</text>
+    <text class="lblv" x="${x2+12}" y="${y(t.b)+5}">${fmt(t.b)}</text>
+    <text class="lbl" x="${x1}" y="${H-6}" text-anchor="middle">Jan 25</text>
+    <text class="lbl" x="${x2}" y="${H-6}" text-anchor="middle">Oct 26</text>
+  </svg>`;
+}
+$('#trendGrid').innerHTML=TRENDS.map(t=>`<article class="card tr reveal"><div class="h"><h3>${t.n}</h3>${chip(t.s)}</div><div class="verdict">${t.v} · ${t.u}</div>${trendSVG(t)}</article>`).join("");
+
+/* supplements */
+$('#suppList').innerHTML=SUPP.map(s=>`<div class="row"><b>${s.n}</b>${chip(s.s,s.l)}<p>${s.t}</p></div>`).join("");
+
+/* GP list with storage */
+let saved={}; try{saved=JSON.parse(localStorage.getItem('kp-gp')||"{}")}catch(e){saved={}}
+$('#gpList').innerHTML=GP.map((g,i)=>`<label class="card reveal ${saved[i]?"done":""}"><input type="checkbox" data-i="${i}" ${saved[i]?"checked":""} aria-label="${g.q}"><div><div class="q">${g.q}</div><div class="why">${g.w}</div></div>${chip(g.s,{r:"Act",a:"Ask",g:"Routine"}[g.s])}</label>`).join("");
+$('#gpList').addEventListener('change',e=>{const i=e.target.dataset.i;if(i==null)return;saved[i]=e.target.checked;e.target.closest('label').classList.toggle('done',e.target.checked);try{localStorage.setItem('kp-gp',JSON.stringify(saved))}catch(_){}
+  if(e.target.checked&&window.gsap&&!reduced)gsap.fromTo(e.target,{scale:.6},{scale:1,duration:.5,ease:'elastic.out(1,.4)'});});
+
+/* controls */
+$('#statusSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fStatus=b.dataset.s;$$('#statusSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));render(true);});
+$('#unitSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;units=b.dataset.u;$$('#unitSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));render(false);});
+$('#catbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fCat=b.dataset.c;$$('#catbar button').forEach(x=>x.setAttribute('aria-pressed',x===b));render(true);});
+$('#q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();render(false);});
+
+/* tabs */
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('#tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.t));
+  const p=$('#p-'+b.dataset.t); p.style.opacity=1; p.style.transform="none";
+  if(window.gsap&&!reduced) gsap.fromTo(p.querySelectorAll('.card'),{opacity:0,y:16},{opacity:1,y:0,duration:.45,stagger:.08,ease:"power2.out"});
+  if(window.ScrollTrigger) ScrollTrigger.refresh();});
+
+/* protein calc */
+function calc(){const w=+$('#wt').value;$('#wtv').textContent=w;$('#pLo').textContent=Math.round(w*1.0);$('#pHi').textContent=Math.round(w*1.2);$('#pMeal').textContent=Math.round(w*1.2/3);}
+$('#wt').addEventListener('input',calc); calc();
+
+$('#printBtn').addEventListener('click',()=>window.print());
+/* theme toggle */
+const SUN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>';
+const MOON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z" fill="currentColor"/></svg>';
+const isDark=()=>{const a=document.documentElement.getAttribute('data-theme');return a?a==='dark':matchMedia('(prefers-color-scheme: dark)').matches;};
+function paintBtn(){const d=isDark();$('#themeIco').innerHTML=d?SUN:MOON;$('#themeTxt').textContent=d?'White':'Black';$('#themeBtn').setAttribute('aria-label',d?'Switch to white mode':'Switch to black mode');}
+$('#themeBtn').addEventListener('click',()=>{const next=isDark()?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('kp-theme',next)}catch(e){}paintBtn();
+  if(window.gsap&&!reduced)gsap.fromTo('#themeIco',{rotate:-90,scale:.6},{rotate:0,scale:1,duration:.5,ease:'back.out(2)'});});
+paintBtn();
+let prevTheme=null;
+window.addEventListener('beforeprint',()=>{prevTheme=document.documentElement.getAttribute('data-theme');document.documentElement.setAttribute('data-theme','light');});
+window.addEventListener('afterprint',()=>{if(prevTheme)document.documentElement.setAttribute('data-theme',prevTheme);else document.documentElement.removeAttribute('data-theme');});
+
+/* ---------- MOTION ---------- */
+const hasGsap=!!window.gsap;
+render(false);
+function setCounts(){ $$('[data-to]').forEach(el=>{const d=+(el.dataset.dec||0);el.textContent=(+el.dataset.to).toFixed(d);}); }
+
+if(!hasGsap||reduced){
+  document.documentElement.classList.add('no-motion'); setCounts();
+}else{
+  gsap.registerPlugin(ScrollTrigger);
+  if(window.Lenis){
+    const lenis=new Lenis({lerp:0.1,smoothWheel:true,anchors:{offset:-60}});
+    lenis.on('scroll',ScrollTrigger.update);
+    gsap.ticker.add(t=>lenis.raf(t*1000));
+    gsap.ticker.lagSmoothing(0);
+    window.__lenis=lenis;
+    $$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href');const el=id==="#top"?0:$(id);if(el==null)return;e.preventDefault();lenis.scrollTo(el,{offset:-56});}));
+  }
+  /* Blur-text headline (React Bits "BlurText") */
+  const h=$('#headline'); h.innerHTML=h.textContent.split(' ').map(w=>`<span class="w">${[...w].map(c=>`<span class="ch">${c}</span>`).join('')}</span>`).join(' ');
+  gsap.from('#headline .ch',{opacity:0,yPercent:80,rotationX:-95,transformPerspective:700,filter:'blur(8px)',duration:1.1,stagger:.028,ease:'expo.out',delay:.2});
+  gsap.from('.orbitkey,.hud',{opacity:0,y:16,duration:.9,delay:1.1,ease:'power2.out'});
+  /* Scroll-scrubbed word reveal (React Bits "ScrollReveal") */
+  $$('.sec-head h2').forEach(h2=>{h2.innerHTML=h2.textContent.split(' ').map(w=>`<span class="wd">${w}</span>`).join(' ');
+    gsap.fromTo(h2.querySelectorAll('.wd'),{opacity:.12,y:14,filter:'blur(6px)'},{opacity:1,y:0,filter:'blur(0px)',stagger:.1,ease:'none',scrollTrigger:{trigger:h2,start:'top 90%',end:'top 55%',scrub:true}});});
+  gsap.to('.progress',{scaleX:1,ease:'none',scrollTrigger:{trigger:document.body,start:'top top',end:'bottom bottom',scrub:.3}});
+  /* Score tiles flip in */
+  $$('.tile').forEach(t=>{t.classList.remove('reveal');t.classList.add('spot');});
+  gsap.from('.tile',{rotationY:-75,opacity:0,z:-120,transformPerspective:1000,transformOrigin:'0% 50%',stagger:.13,duration:1.1,ease:'power3.out',scrollTrigger:{trigger:'.score',start:'top 85%',once:true}});
+  /* Priority cards sweep in */
+  $$('.prio .card').forEach((c,i)=>{c.classList.remove('reveal');c.classList.add('spot');
+    gsap.from(c,{x:i%2?90:-90,rotation:i%2?2.5:-2.5,opacity:0,duration:1,ease:'power3.out',scrollTrigger:{trigger:c,start:'top 88%',once:true}});});
+  $$('.tr,.snap .card,.panel .card,.gp label').forEach(c=>c.classList.add('spot'));
+  /* 3D tilt + spotlight (React Bits "TiltedCard"/"SpotlightCard") */
+  if(matchMedia('(pointer:fine)').matches){let cur=null;
+    const reset=el=>gsap.to(el,{rotationX:0,rotationY:0,duration:.6,ease:'power3.out'});
+    document.addEventListener('pointermove',e=>{const c=e.target.closest&&e.target.closest('.spot');
+      if(cur&&c!==cur)reset(cur);cur=c;if(!c)return;const r=c.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      c.style.setProperty('--mx',(px*100)+'%');c.style.setProperty('--my',(py*100)+'%');
+      const k=c.classList.contains('m')||c.tagName==='LABEL'?5:7;
+      gsap.to(c,{rotationY:(px-.5)*k,rotationX:-(py-.5)*k,transformPerspective:1000,duration:.4,ease:'power2.out'});},{passive:true});
+    document.addEventListener('pointerleave',()=>{if(cur)reset(cur);cur=null;});}
+  gsap.from('.hero .eyebrow, .hero .lede, .hero .pill',{opacity:0,y:20,duration:.9,stagger:.08,delay:.35,ease:'power2.out'});
+  gsap.to('.aurora .a1',{x:'18vw',y:'8vh',duration:14,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  gsap.to('.aurora .a2',{x:'-16vw',y:'12vh',duration:17,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  gsap.to('.aurora .a3',{x:'10vw',y:'-14vh',scale:1.2,duration:12,repeat:-1,yoyo:true,ease:'sine.inOut'});
+  /* Staggered entrances (React Bits "AnimatedContent") */
+  ScrollTrigger.batch('.reveal',{start:'top 90%',once:true,onEnter:els=>gsap.to(els,{opacity:1,y:0,duration:.8,stagger:.08,ease:'power3.out',overwrite:true})});
+  gsap.set('#grid .m',{opacity:0,y:30,rotationX:-18,transformPerspective:1000,transformOrigin:'50% 0%'});
+  ScrollTrigger.batch('#grid .m',{start:'top 92%',once:true,onEnter:els=>{gsap.to(els,{opacity:1,y:0,rotationX:0,duration:.8,stagger:.06,ease:'power3.out'});els.forEach(el=>{const pt=el.querySelector('.pt');if(pt)gsap.from(pt,{left:'0%',duration:1.1,ease:'power3.out',delay:.15});});}});
+  /* Count-up numbers */
+  $$('[data-to]').forEach(el=>{const to=+el.dataset.to,d=+(el.dataset.dec||0),o={v:0};
+    ScrollTrigger.create({trigger:el,start:'top 92%',once:true,onEnter:()=>gsap.to(o,{v:to,duration:1.4,ease:'power2.out',onUpdate:()=>el.textContent=o.v.toFixed(d)})});});
+  /* Trend lines draw */
+  $$('.tr').forEach(c=>{const ln=c.querySelector('.ln'),end=c.querySelector('.end');
+    gsap.fromTo(ln,{strokeDashoffset:1},{strokeDashoffset:0,duration:1.2,ease:'power2.inOut',scrollTrigger:{trigger:c,start:'top 85%',once:true}});
+    gsap.from(end,{scale:0,transformOrigin:'center',duration:.5,delay:.9,ease:'back.out(3)',scrollTrigger:{trigger:c,start:'top 85%',once:true}});});
+  /* ECG trace draws on loop */
+  const ep=$('#ecgPath'); if(ep){ep.setAttribute('stroke-dasharray','1');
+    gsap.fromTo(ep,{strokeDashoffset:1},{strokeDashoffset:0,duration:2.2,ease:'none',repeat:-1,repeatDelay:.4,scrollTrigger:{trigger:ep,start:'top 95%',toggleActions:'play pause resume pause'}});}
+  /* Chapter label tracks which form the 3D scene has taken */
+  const chap=$('#chapter');
+  const chapters=[['#top','Pulse'],['#overview','Pulse'],['#priorities','Double helix'],['#bloods','Double helix'],['#trends','Lotus'],['#snapshot','Lotus'],['#plan','Galaxy'],['#gp','Galaxy']];
+  chapters.forEach(([sel,label])=>ScrollTrigger.create({trigger:sel,start:'top 60%',end:'bottom 60%',onToggle:s=>{if(s.isActive&&chap.textContent!==label){chap.textContent=label;gsap.fromTo(chap,{opacity:0,y:10},{opacity:sel==='#top'?0:1,y:0,duration:.5,ease:'power2.out'});}}}));
+  /* Shiny + magnetic button */
+  gsap.to('.btn .shine',{left:'130%',duration:1.6,repeat:-1,repeatDelay:2.4,ease:'power2.inOut'});
+  $$('.btn').forEach(b=>{b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.25,y:(e.clientY-r.top-r.height/2)*.35,duration:.3});});b.addEventListener('mouseleave',()=>gsap.to(b,{x:0,y:0,duration:.5,ease:'elastic.out(1,.4)'}));});
+  window.addEventListener('beforeprint',()=>{gsap.set('.reveal,#grid .m,.tile,.prio .card,.sec-head h2 .wd',{opacity:1,x:0,y:0,rotationX:0,rotationY:0,rotation:0,filter:'none'});});
+}
+})();
+</script>
+<script>setTimeout(function(){if(!window.__kpScene)document.documentElement.classList.add("no-gl")},5000)</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+(function(){
+"use strict";
+const canvas=document.getElementById('gl');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});}
+catch(e){document.documentElement.classList.add('no-gl');return;}
+if(!renderer.getContext()){document.documentElement.classList.add('no-gl');return;}
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+
+const mobile=innerWidth<700;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.1,80);
+camera.position.set(0,0,10);
+const world=new THREE.Group(); scene.add(world);
+
+/* ---------- Morphing particle field: pulse → double helix → lotus → galaxy ---------- */
+const N=mobile?7000:16000;
+const A=new Float32Array(N*3),B=new Float32Array(N*3),C=new Float32Array(N*3),D=new Float32Array(N*3);
+const R1=new Float32Array(N),R2=new Float32Array(N),SZ=new Float32Array(N);
+const rnd=Math.random, gauss=()=>{let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+const GA=Math.PI*(3-Math.sqrt(5));
+for(let i=0;i<N;i++){
+  const k=i*3;
+  // A: pulse sphere (shell + inner core)
+  if(rnd()<.72){const y=1-(i/(N-1))*2,r=Math.sqrt(1-y*y),th=GA*i,R=1.7+gauss()*.04;A[k]=Math.cos(th)*r*R;A[k+1]=y*R;A[k+2]=Math.sin(th)*r*R;}
+  else{const u=rnd()*2-1,th=rnd()*Math.PI*2,r=Math.sqrt(1-u*u),R=1.25*Math.cbrt(rnd());A[k]=Math.cos(th)*r*R;A[k+1]=u*R;A[k+2]=Math.sin(th)*r*R;}
+  // B: DNA double helix along x
+  {const x=(rnd()*2-1)*7;
+   if(rnd()<.74){const s=rnd()<.5?0:Math.PI,th=x*1.05+s;B[k]=x+gauss()*.03;B[k+1]=Math.cos(th)*1.05+gauss()*.05;B[k+2]=Math.sin(th)*1.05+gauss()*.05;}
+   else{const rung=Math.round((x+7)/14*54)/54*14-7,th=rung*1.05,t=rnd()*2-1;B[k]=rung+gauss()*.02;B[k+1]=Math.cos(th)*1.05*t+gauss()*.02;B[k+2]=Math.sin(th)*1.05*t+gauss()*.02;}}
+  // C: lotus (3 layers of petals + seed head)
+  if(rnd()<.9){const L=Math.floor(rnd()*3),n=8,j=Math.floor(rnd()*n),phi=j/n*Math.PI*2+L*(Math.PI/n),u=Math.sqrt(rnd()),v=rnd()*2-1;
+    const len=1.25+L*.55,w=v*(Math.PI/n)*.95*Math.sin(Math.PI*Math.min(u*1.05,1)),rho=.25+u*len*(1-.18*(2-L)*u),lift=(2-L)*.55+.25;
+    const y=Math.pow(u,1.8)*lift*1.6-.6+gauss()*.015;C[k]=Math.cos(phi+w)*rho;C[k+1]=y;C[k+2]=Math.sin(phi+w)*rho;}
+  else{const th=GA*i,u=rnd(),r=.42*Math.sqrt(u);C[k]=Math.cos(th)*r;C[k+1]=-.45+(1-u)*.18+gauss()*.02;C[k+2]=Math.sin(th)*r;}
+  // D: three-arm spiral galaxy
+  {const arm=i%3,r=.15+Math.pow(rnd(),.75)*5.2,ang=arm*Math.PI*2/3+r*.95+gauss()*.28*(1-r/7);
+   D[k]=Math.cos(ang)*r;D[k+1]=gauss()*.12*(1.2-r/5.4);D[k+2]=Math.sin(ang)*r;}
+  R1[i]=rnd(); R2[i]=rnd(); SZ[i]=.55+Math.pow(rnd(),3)*1.6;
+}
+const pg=new THREE.BufferGeometry();
+pg.setAttribute('position',new THREE.BufferAttribute(A,3));
+pg.setAttribute('aB',new THREE.BufferAttribute(B,3));
+pg.setAttribute('aC',new THREE.BufferAttribute(C,3));
+pg.setAttribute('aD',new THREE.BufferAttribute(D,3));
+pg.setAttribute('aR1',new THREE.BufferAttribute(R1,1));
+pg.setAttribute('aR2',new THREE.BufferAttribute(R2,1));
+pg.setAttribute('aSize',new THREE.BufferAttribute(SZ,1));
+
+const NOISE=`
+vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);
+vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;
+vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;
+i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));
+float n_=.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);
+vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);
+vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;vec4 sh=-step(h,vec4(0.));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);
+vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);m=m*m;
+return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}`;
+
+const U={uTime:{value:0},uMorph:{value:0},uBeat:{value:0},uBurst:{value:0},uPtr:{value:new THREE.Vector3(99,99,0)},uPtrOn:{value:0},
+  uScale:{value:1},uSize:{value:mobile?.075:.06},uC1:{value:new THREE.Color()},uC2:{value:new THREE.Color()},uC3:{value:new THREE.Color()},uOp:{value:1},uDark:{value:1}};
+const pMat=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+ vertexShader:NOISE+`
+ attribute vec3 aB,aC,aD;attribute float aR1,aR2,aSize;
+ uniform float uTime,uMorph,uBeat,uBurst,uScale,uSize,uPtrOn;uniform vec3 uPtr,uC1,uC2,uC3;
+ varying vec3 vCol;varying float vA;
+ mat3 rY(float a){float c=cos(a),s=sin(a);return mat3(c,0.,-s,0.,1.,0.,s,0.,c);}
+ mat3 rX(float a){float c=cos(a),s=sin(a);return mat3(1.,0.,0.,0.,c,s,0.,-s,c);}
+ vec3 shape(float i){
+   if(i<.5) return rY(uTime*.18)*position*(1.+uBeat*.07);
+   if(i<1.5) return rX(uTime*.45)*aB;
+   if(i<2.5) return rX(.42)*(rY(uTime*.12)*aC);
+   return rX(1.05)*(rY(uTime*.07)*aD);
+ }
+ void main(){
+   float seg=floor(clamp(uMorph,0.,2.999));float f=uMorph-seg;
+   float t=smoothstep(0.,1.,clamp((f-aR1*.35)/.65,0.,1.));
+   vec3 p=mix(shape(seg),shape(seg+1.),t);
+   float swirl=sin(3.14159*t);
+   vec3 nz=vec3(snoise(p*.55+vec3(uTime*.25,0.,0.)),snoise(p*.55+vec3(0.,uTime*.25,17.)),snoise(p*.55+vec3(31.,0.,uTime*.25)));
+   p+=nz*(.035+swirl*1.1+uBurst*.6);
+   p+=normalize(p+1e-4)*uBurst*(1.2+aR2*2.2);
+   vec3 d=p-uPtr;float dl=length(d);p+=normalize(d+1e-4)*smoothstep(1.6,0.,dl)*.9*uPtrOn;
+   vec4 mv=modelViewMatrix*vec4(p,1.);
+   gl_Position=projectionMatrix*mv;
+   gl_PointSize=uSize*aSize*(1.+uBeat*.35+swirl*.4)*uScale/-mv.z;
+   vec3 c=mix(uC1,uC2,smoothstep(.15,.85,aR2+.25*sin(uTime*.6+p.x*.8)));
+   c=mix(c,uC3,smoothstep(.72,1.,aR1));
+   vCol=c*(1.+uBeat*.5);vA=.55+.45*aR2;
+ }`,
+ fragmentShader:`uniform float uOp,uDark;varying vec3 vCol;varying float vA;
+ void main(){vec2 q=gl_PointCoord-.5;float d=length(q);if(d>.5)discard;float a=smoothstep(.5,.0,d);a=mix(a,pow(a,1.6),uDark);gl_FragColor=vec4(vCol,a*vA*uOp);}`});
+const points=new THREE.Points(pg,pMat);
+const field=new THREE.Group(); field.add(points); world.add(field);
+
+/* soft halo + heartbeat shockwaves */
+function radialTex(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');
+ const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.5)');gr.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=gr;g.fillRect(0,0,128,128);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
+const glowTex=radialTex();
+const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:.5}));
+halo.scale.set(7,7,1); field.add(halo);
+const waves=[0,1].map(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.97,1,96),new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,opacity:0}));field.add(m);return {m,t:9};});
+let waveIx=0,lastBeatPeak=false;
+
+/* ---------- Result orbs: one per test result, coloured by status ---------- */
+const counts=window.__kpCounts||{g:38,a:13,r:3};
+const statuses=[...Array(counts.r).fill('r'),...Array(counts.a).fill('a'),...Array(counts.g).fill('g')];
+const ON=statuses.length;
+const orbs=new THREE.InstancedMesh(new THREE.SphereGeometry(1,18,18),new THREE.MeshBasicMaterial({toneMapped:false}),ON);
+const glowGeo=new THREE.BufferGeometry();
+const gPos=new Float32Array(ON*3),gCol=new Float32Array(ON*3),gSize=new Float32Array(ON);
+glowGeo.setAttribute('position',new THREE.BufferAttribute(gPos,3));
+glowGeo.setAttribute('color',new THREE.BufferAttribute(gCol,3));
+glowGeo.setAttribute('size',new THREE.BufferAttribute(gSize,1));
+const glowMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,vertexColors:true,
+ uniforms:{uTex:{value:glowTex},uScale:{value:1},uOp:{value:1}},
+ vertexShader:`attribute float size;varying vec3 vC;uniform float uScale;void main(){vC=color;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=size*uScale/-mv.z;gl_Position=projectionMatrix*mv;}`,
+ fragmentShader:`uniform sampler2D uTex;uniform float uOp;varying vec3 vC;void main(){vec4 t=texture2D(uTex,gl_PointCoord);gl_FragColor=vec4(vC,t.a*uOp);}`});
+const glow=new THREE.Points(glowGeo,glowMat);
+const orbData=statuses.map((s,i)=>{
+  const ring=s==='r'?0:(s==='a'?1:2);
+  const r=[2.35,2.95,3.55][ring]+(rnd()-.5)*.35;
+  const q=new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd()-.5)*.8+(ring-1)*.3,rnd()*Math.PI*2,(rnd()-.5)*.6));
+  return {s,r,q,a0:(i/ON)*Math.PI*2*7.3+rnd(),sp:(.25+rnd()*.2)*(ring===1?-1:1)/(1+ring*.25),size:s==='r'?.1:(s==='a'?.078:.06),wob:rnd()*6};
+});
+const orbGroup=new THREE.Group(); orbGroup.add(orbs,glow); field.add(orbGroup);
+const COLORS={light:{g:'#28b14c',a:'#ff8f00',r:'#ff2d3c'},dark:{g:'#30d158',a:'#ffa514',r:'#ff453a'}};
+
+/* ---------- Theme ---------- */
+function isDark(){const a=document.documentElement.getAttribute('data-theme');return a?a==='dark':matchMedia('(prefers-color-scheme: dark)').matches;}
+function applyTheme(){
+  const d=isDark();
+  U.uC1.value.set(d?'#ff4d8d':'#e0306a'); U.uC2.value.set(d?'#9d8bff':'#5b45e8'); U.uC3.value.set(d?'#3ee0d0':'#0a9c93'); U.uDark.value=d?1:0;
+  pMat.blending=d?THREE.AdditiveBlending:THREE.NormalBlending; pMat.needsUpdate=true;
+  halo.material.color.set(d?'#ff4d8d':'#ff9ab8'); halo.material.blending=d?THREE.AdditiveBlending:THREE.NormalBlending; halo.material.needsUpdate=true;
+  waves.forEach(w=>{w.m.material.color.set(d?'#ff6b9d':'#e0306a');w.m.material.blending=d?THREE.AdditiveBlending:THREE.NormalBlending;w.m.material.needsUpdate=true;});
+  glowMat.blending=d?THREE.AdditiveBlending:THREE.NormalBlending; glowMat.needsUpdate=true;
+  const pal=COLORS[d?'dark':'light'],c=new THREE.Color();
+  orbData.forEach((o,i)=>{c.set(pal[o.s]);orbs.setColorAt(i,c);gCol[i*3]=c.r;gCol[i*3+1]=c.g;gCol[i*3+2]=c.b;gSize[i]=o.size*(d?9:6);});
+  orbs.instanceColor.needsUpdate=true; glowGeo.attributes.color.needsUpdate=true; glowGeo.attributes.size.needsUpdate=true;
+}
+orbs.setColorAt(0,new THREE.Color());
+applyTheme();
+new MutationObserver(applyTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+
+/* ---------- Scroll → morph ---------- */
+const anchors=['#top','#priorities','#trends','#plan'].map(s=>document.querySelector(s));
+function morphTarget(){
+  const y=scrollY,vh=innerHeight;
+  const pos=anchors.map((el,i)=>i===0?0:el.getBoundingClientRect().top+y-vh*.55);
+  if(y<=pos[0])return 0;
+  for(let i=0;i<pos.length-1;i++){if(y<pos[i+1]){const f=(y-pos[i])/Math.max(1,pos[i+1]-pos[i]);const e=Math.min(1,Math.max(0,(f-.2)/.6));return i+e*e*(3-2*e);}}
+  return pos.length-1;
+}
+function heroProgress(){return Math.min(1,Math.max(0,scrollY/Math.max(1,innerHeight)));}
+
+/* pointer → world plane */
+const ptr={x:0,y:0,on:0},sm={x:0,y:0,h:0,m:0};
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),plane=new THREE.Plane(new THREE.Vector3(0,0,1),0),hit=new THREE.Vector3();
+addEventListener('pointermove',e=>{ptr.x=e.clientX/innerWidth-.5;ptr.y=e.clientY/innerHeight-.5;ptr.on=1;ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);},{passive:true});
+document.addEventListener('pointerleave',()=>ptr.on=0);
+
+/* click the hero for a burst */
+const burst={v:0};
+document.querySelector('.hero').addEventListener('pointerdown',e=>{if(e.target.closest('a,button'))return;if(window.gsap&&!reduced){gsap.killTweensOf(burst);gsap.timeline().to(burst,{v:1,duration:.35,ease:'power3.out'}).to(burst,{v:0,duration:1.6,ease:'elastic.out(1,.35)'});}});
+
+/* intro: particles implode from a wide cloud */
+const intro={v:reduced?1:0};
+if(window.gsap&&!reduced) gsap.to(intro,{v:1,duration:2.8,ease:'expo.out',delay:.1});
+
+/* ---------- Loop ---------- */
+const m4=new THREE.Matrix4(),v3=new THREE.Vector3(),qI=new THREE.Quaternion(),sc=new THREE.Vector3();
+const t0=performance.now();let last=t0;
+function beat(t){const T=60/66,ph=(t%T)/T;return Math.exp(-Math.pow((ph-.06)*26,2))+.6*Math.exp(-Math.pow((ph-.24)*26,2));}
+const base={y:mobile?-2.75:-2.2,s:mobile?.5:.78};
+document.getElementById('hudN').textContent=N.toLocaleString('en-GB');
+function frame(){
+  const now=performance.now(),dt=Math.min((now-last)/1000,.05),t=(now-t0)/1000;last=now;
+  const hp=heroProgress(),mt=morphTarget();
+  sm.x+=(ptr.x-sm.x)*.05; sm.y+=(ptr.y-sm.y)*.05; sm.h+=(hp-sm.h)*.12; sm.m+=(mt-sm.m)*(reduced?1:.06);
+  const b=reduced?0:beat(t), iv=intro.v, dark=isDark();
+  U.uTime.value=reduced?0:t; U.uBeat.value=b*Math.max(0,1-sm.m); U.uMorph.value=sm.m; U.uBurst.value=burst.v+(1-iv)*1.4;
+  // field placement: low and centred in the hero, centred and fitted later on
+  const k=Math.min(1,sm.m), aspect=innerWidth/innerHeight, fit=Math.min(1,Math.max(.42,aspect/1.75));
+  field.position.y=(base.y+sm.h*1.6)*(1-k);
+  field.scale.setScalar((base.s*(.55+.45*iv))*(1-k)+fit*k);
+  field.rotation.y=sm.x*.35; field.rotation.x=sm.y*.2;
+  // pointer in field-local space
+  ray.setFromCamera(ndc,camera); if(ray.ray.intersectPlane(plane,hit)){field.worldToLocal(hit);U.uPtr.value.copy(hit);}
+  U.uPtrOn.value+=((reduced?0:ptr.on)-U.uPtrOn.value)*.08;
+  // hero-only extras fade as the morph begins
+  const fadeCore=Math.max(0,1-sm.m*1.4)*Math.max(0,1-sm.h*1.2);
+  halo.material.opacity=(dark?.38:.22)*(.75+b*.7)*iv*fadeCore; halo.visible=fadeCore>.01;
+  if(!reduced&&b>.85&&!lastBeatPeak&&fadeCore>.05){const w=waves[waveIx++%2];w.t=0;} lastBeatPeak=b>.85;
+  waves.forEach(w=>{w.t+=dt;const p=Math.min(1,w.t/1.4);w.m.scale.setScalar(1.75+p*1.9);w.m.material.opacity=(1-p)*(dark?.28:.22)*fadeCore;w.m.visible=p<1&&fadeCore>.01;w.m.lookAt(camera.position);});
+  // orbs
+  orbGroup.rotation.y=sm.h*Math.PI+sm.x*.4; orbGroup.rotation.x=.25+sm.y*.25;
+  for(let i=0;i<ON;i++){const o=orbData[i];const a=o.a0+t*o.sp*(reduced?0:1);
+    const rr=o.r*(.3+.7*iv)*(1+burst.v*.6)+Math.sin(t*1.3+o.wob)*.06;
+    v3.set(Math.cos(a)*rr,Math.sin(t*.9+o.wob)*.08,Math.sin(a)*rr).applyQuaternion(o.q);
+    const pulse=o.s==='r'?1+.45*b:1+.12*b;
+    m4.compose(v3,qI,sc.setScalar(o.size*pulse*iv*Math.max(fadeCore,.001)));orbs.setMatrixAt(i,m4);
+    gPos[i*3]=v3.x;gPos[i*3+1]=v3.y;gPos[i*3+2]=v3.z;}
+  orbs.instanceMatrix.needsUpdate=true; glowGeo.attributes.position.needsUpdate=true; glowMat.uniforms.uOp.value=(dark?1:.55)*fadeCore; orbGroup.visible=fadeCore>.01;
+  // particles: brighter in the hero, gentler behind content
+  const op=sm.h<1?1:1; U.uOp.value=(dark?.9:.8)*op;
+  // camera parallax + slow orbit for depth
+  camera.position.x+=((sm.x*1.4+Math.sin(t*.1)*.4)-camera.position.x)*.05;
+  camera.position.y+=((-sm.y*.9)-camera.position.y)*.05;
+  camera.position.z=10-Math.sin(Math.min(sm.m,3)/3*Math.PI)*1.2;
+  camera.lookAt(0,field.position.y*.35,0);
+  canvas.style.opacity=(1-Math.min(sm.h,1)*(dark?.4:.55)).toFixed(3);
+  renderer.render(scene,camera);
+  if(!tuned){fc++;ft+=dt;if(ft>2.5){tuned=true;if(fc/ft<30&&renderer.getPixelRatio()>1){renderer.setPixelRatio(1);resize();}}}
+}
+let tuned=false,fc=0,ft=0;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  const s=renderer.getPixelRatio()*innerHeight*.5;U.uScale.value=s;glowMat.uniforms.uScale.value=s;}
+addEventListener('resize',resize); resize();
+if(reduced){frame();addEventListener('scroll',()=>requestAnimationFrame(frame),{passive:true});}
+else renderer.setAnimationLoop(frame);
+window.__kpScene={renderer,scene,ok:true,N};
+})();
+</script>
+
+</body>
+</html>
